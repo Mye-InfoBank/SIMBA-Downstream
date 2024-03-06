@@ -1,6 +1,5 @@
 from shiny import App, reactive, ui, render
 import scanpy as sc
-from scipy.sparse import csr_matrix
 
 from composition import composition_server, composition_ui
 from dgea import dgea_server, dgea_ui
@@ -10,7 +9,6 @@ with open("data/input.txt") as f:
     name = filename.replace(".h5ad", "")
 
 adata = sc.read_h5ad(filename)
-adata.X = csr_matrix(adata.X)
 categorical_columns = adata.obs.select_dtypes(include="category").columns.to_list()
 
 
