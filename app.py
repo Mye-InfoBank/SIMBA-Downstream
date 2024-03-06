@@ -5,8 +5,8 @@ from scipy.sparse import csr_matrix
 from composition import composition_server, composition_ui
 from dgea import dgea_server, dgea_ui
 
-with open("input.txt") as f:
-    filename = f.read().strip()
+with open("data/input.txt") as f:
+    filename = "data/" + f.read().strip()
     name = filename.replace(".h5ad", "")
 
 adata = sc.read_h5ad(filename)
