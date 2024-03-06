@@ -1,1 +1,1 @@
-minimal_example.h5ad
+merged.h5ad
