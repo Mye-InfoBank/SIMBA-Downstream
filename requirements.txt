@@ -2,3 +2,4 @@ ipykernel
 scanpy
 shiny
 jinja2
+anndata2ri
