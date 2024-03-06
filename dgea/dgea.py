@@ -36,6 +36,6 @@ def dgea_server(input, output, session, _adata: reactive.Value[ad.AnnData]):
     run_dgea_server("run_dgea", _adata, _dds, _design_matrix, _counts, _comparisons, _contrast)
     filter_dgea_server("filter_dgea", _dds, _counts, _comparisons,
                        _result, _filtered_result, _filtered_genes,
-                       _filtered_counts, _comparison, _alpha, _lfc)
+                       _filtered_counts, _comparison, _contrast, _alpha, _lfc)
     plot_dgea_server("plot_dgea", _filtered_counts, _contrast, _comparison, _design_matrix,
                      _result, _alpha, _lfc)

@@ -16,7 +16,7 @@ def filter_dgea_ui():
 def filter_dgea_server(input, output, session, 
                        _dds, _counts, _comparisons,
                        _result, _filtered_result, _filtered_genes,
-                       _filtered_counts, _comparison,
+                       _filtered_counts, _comparison, _contrast,
                        _alpha, _lfc
                        ):
 
@@ -40,6 +40,10 @@ def filter_dgea_server(input, output, session,
     def update_result():
         dds = _dds.get()
         comparison = input["comparison"].get()
+        contrast = _contrast.get()
+
+        if not comparison.startswith(contrast):
+            return
 
         res_df = get_results(dds, comparison)
         _result.set(res_df)
