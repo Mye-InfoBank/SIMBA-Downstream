@@ -1,5 +1,4 @@
 from shiny import reactive, ui, render, module
-import matplotlib.pyplot as plt
 import pandas as pd
 import anndata as ad
 import tempfile
@@ -9,7 +8,7 @@ import seaborn as sns
 import shinywidgets as sw
 import plotly.express as px
 
-from rpy2.robjects import pandas2ri, Formula, r, conversion
+from rpy2.robjects import pandas2ri, Formula, r
 from rpy2.robjects.packages import importr
 pandas2ri.activate()
 deseq = importr('DESeq2')
@@ -53,6 +52,7 @@ def dgea_server(input, output, session, _adata: reactive.Value[ad.AnnData]):
     _significant_counts = reactive.value(None)
     _design_matrix = reactive.value(None)
     _deseq_results = reactive.value(None)
+    _heatmap = reactive.value(None)
 
     @reactive.effect
     def update_columns():
@@ -173,8 +173,34 @@ def dgea_server(input, output, session, _adata: reactive.Value[ad.AnnData]):
 
         if counts_df.empty:
             return None
+
+        plot = sns.clustermap(counts_df.T, cmap="viridis", figsize=(10, 10))
+
+        _heatmap.set(plot)
+
+        return plot
+    
+    @render.download(
+            filename=lambda: f"deseq2_matrix_{input['comparison'].get()}.csv"
+    )
+    def download_dgea():
+        deseq_results = _deseq_results.get()
+        if deseq_results is None:
+            return None
+        with tempfile.NamedTemporaryFile(suffix=".csv", delete=False) as temp:
+            deseq_results.to_csv(temp.name)
+            return temp.name
         
-        sns.clustermap(counts_df.T, cmap="viridis", figsize=(10, 10))
+    @render.download(
+            filename=lambda: f"heatmap_{input['comparison'].get()}.png"
+    )
+    def download_plot():
+        plot = _heatmap.get()
+        if plot is None:
+            return None
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as temp:
+            plot.savefig(temp.name, bbox_inches="tight")
+            return temp.name
 
     @output
     @sw.render_plotly
