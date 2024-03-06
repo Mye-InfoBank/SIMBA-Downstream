@@ -8,7 +8,7 @@ from dgea.deseq2 import pseudobulk, get_formula, get_dds, get_normalized_counts,
 @module.ui
 def run_dgea_ui():
     return ui.div(ui.output_ui("contrast_selector"),
-              ui.input_action_button("run", "Run analysis"))
+              ui.input_task_button("run", "Run analysis"))
 
 @module.server
 def run_dgea_server(input, output, session,
@@ -37,28 +37,38 @@ def run_dgea_server(input, output, session,
         return ui.input_select("contrast", "Contrast", choices=columns, selected=columns[0])
     
     @reactive.effect
-    @reactive.event(input["run"])
     def update_contrast():
         contrast = input["contrast"].get()
         _contrast.set(contrast)
-    
+
     @reactive.effect
     @reactive.event(input["run"])
-    def run_deseq():
+    def handle_run():
+        print("Handle")
         adata = _adata.get()
-        contrast = input["contrast"].get()
+        contrast = _contrast.get()
+        run_deseq(adata, contrast)
 
+    @reactive.effect
+    def update_deseq_result():
+        dds, df_counts, design = run_deseq.result()
+        _dds.set(dds)
+        _design_matrix.set(design)
+        _counts.set(df_counts)
+    
+    @ui.bind_task_button(button_id="run")
+    @reactive.extended_task
+    async def run_deseq(adata, contrast):
         df, design = pseudobulk(adata, contrast)
 
         design_formula = get_formula(f'~ {contrast}')
-        _design_matrix.set(design)
 
         dds = get_dds(df, design, design_formula)
-        _dds.set(dds)
 
         counts = get_normalized_counts(dds)
         df_counts = pd.DataFrame(counts, index=df.columns, columns=df.index)
-        _counts.set(df_counts)
+
+        return dds, df_counts, design
 
     @reactive.effect
     def update_comparisons():

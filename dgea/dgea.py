@@ -10,11 +10,8 @@ def dgea_ui():
     return ui.layout_sidebar(
                      ui.sidebar(
                         run_dgea_ui("run_dgea"),
+                        filter_dgea_ui("filter_dgea"),
                         title="Select covariates"
-                     ),
-                     ui.card(
-                         ui.card_header("Plot settings"),
-                         filter_dgea_ui("filter_dgea")
                      ),
                      *plot_dgea_ui("plot_dgea")
                     )

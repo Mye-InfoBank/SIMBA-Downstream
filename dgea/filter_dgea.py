@@ -8,7 +8,8 @@ def filter_dgea_ui():
     return ui.div(
         ui.output_ui("select_comparison"),
         ui.input_slider("alpha", "Alpha (significance threshold)", min=0, max=0.2, step=0.001, value=0.05),
-        ui.input_slider("lfc", "Log2 fold change", min=0, max=10, step=0.1, value=1)
+        ui.input_slider("lfc", "Log2 fold change", min=0, max=10, step=0.1, value=1),
+        ui.output_ui("open_gprofiler")
     )
 
 @module.server
@@ -45,7 +46,6 @@ def filter_dgea_server(input, output, session,
     
     @reactive.effect
     def filter_result():
-        print("filter_result")
         result = _result.get()
         alpha = input["alpha"].get()
         lfc = input["lfc"].get()
@@ -59,3 +59,13 @@ def filter_dgea_server(input, output, session,
         genes = result.index.tolist()
         _filtered_genes.set(genes)
         _filtered_counts.set(counts.loc[genes, :])
+
+    @render.ui
+    def open_gprofiler():
+        genes = _filtered_genes.get()
+        if not genes:
+            return None
+        
+        return ui.input_action_button("gprofiler", label="Significant genes - g:Profiler",
+                    href=f"https://biit.cs.ut.ee/gprofiler/gost?organism=hsapiens&query={'%0A'.join(genes)}",
+                    target="_blank")
