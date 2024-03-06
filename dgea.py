@@ -20,10 +20,20 @@ def dgea_ui():
                         ui.input_action_button("run", "Run analysis"),
                         title="Select covariates"
                      ),
-                     ui.output_ui("select_comparison"),
-                     ui.input_slider("alpha", "Alpha", min=0, max=0.2, step=0.001, value=0.05),
-                     ui.input_slider("lfc", "Log2 fold change", min=0, max=10, step=0.1, value=1),
-                     ui.output_plot("plot_heatmap")
+                     ui.card(
+                         ui.card_header("Plot settings"),
+                         ui.output_ui("select_comparison"),
+                         ui.input_slider("alpha", "Alpha", min=0, max=0.2, step=0.001, value=0.05),
+                         ui.input_slider("lfc", "Log2 fold change", min=0, max=10, step=0.1, value=1)
+                     ),
+                     ui.card(
+                         ui.card_header("Results"),
+                         ui.output_plot("plot_heatmap"),
+                         ui.card_footer(
+                             ui.download_button("download_dgea", "Download DESeq2 matrix"),
+                             ui.download_button("download_plot", "Download plot")
+                         )
+                     )
                     )
 
 @module.server
@@ -34,6 +44,7 @@ def dgea_server(input, output, session, _adata: reactive.Value[ad.AnnData]):
     _comparisons = reactive.value([])
     _genes_significant = reactive.value([])
     _counts = reactive.value(None)
+    _significant_counts = reactive.value(None)
     _design_matrix = reactive.value(None)
 
     @reactive.effect
@@ -122,22 +133,29 @@ def dgea_server(input, output, session, _adata: reactive.Value[ad.AnnData]):
         genes = res_df.index.tolist()
         _genes_significant.set(genes)
 
+    @reactive.effect
+    def update_significant_counts():
+        counts_df = _counts.get()
+        genes = _genes_significant.get()
+
+        if counts_df is None or not genes:
+            return None
+        
+        counts_df = counts_df.loc[genes]
+        _significant_counts.set(counts_df)
+
     @output
     @render.plot
     def plot_heatmap():
-        counts_df = _counts.get()
-        genes = _genes_significant.get()
+        counts_df = _significant_counts.get()
         contrast = input["contrast"].get()
         comparison = input["comparison"].get()
         design_matrix = _design_matrix.get()
 
         if counts_df is None \
-            or not genes \
             or contrast not in design_matrix.columns:
             return None
         
-        counts_df = counts_df.loc[genes]
-
         comparison = comparison[len(contrast)+1:]
         groups = comparison.split("_vs_")
         
