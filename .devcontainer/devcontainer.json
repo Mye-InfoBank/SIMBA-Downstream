@@ -32,7 +32,8 @@
 			"extensions": [
 				"RDebugger.r-debugger",
 				"ms-python.python",
-				"Posit.shiny-python"
+				"Posit.shiny-python",
+				"ms-azuretools.vscode-docker"
 			],
 			"settings": {
 				"r.rterm.linux": "/usr/local/bin/radian",
