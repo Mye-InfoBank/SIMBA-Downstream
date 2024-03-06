@@ -6,6 +6,8 @@ import tempfile
 import numpy as np
 import random
 import seaborn as sns
+import shinywidgets as sw
+import plotly.express as px
 
 from rpy2.robjects import pandas2ri, Formula, r, conversion
 from rpy2.robjects.packages import importr
@@ -27,7 +29,11 @@ def dgea_ui():
                          ui.input_slider("lfc", "Log2 fold change", min=0, max=10, step=0.1, value=1)
                      ),
                      ui.card(
-                         ui.card_header("Results"),
+                         ui.card_header("Volcano plot"),
+                         sw.output_widget("plot_volcano")
+                     ),
+                     ui.card(
+                         ui.card_header("Heatmap"),
                          ui.output_plot("plot_heatmap"),
                          ui.card_footer(
                              ui.download_button("download_dgea", "Download DESeq2 matrix"),
@@ -46,6 +52,7 @@ def dgea_server(input, output, session, _adata: reactive.Value[ad.AnnData]):
     _counts = reactive.value(None)
     _significant_counts = reactive.value(None)
     _design_matrix = reactive.value(None)
+    _deseq_results = reactive.value(None)
 
     @reactive.effect
     def update_columns():
@@ -127,6 +134,8 @@ def dgea_server(input, output, session, _adata: reactive.Value[ad.AnnData]):
         res = r('function(x) data.frame(x)')(res)
         res_df = pandas2ri.rpy2py(res)
 
+        _deseq_results.set(res_df)
+
         res_df = res_df[res_df["padj"] < alpha]
         res_df = res_df[np.abs(res_df["log2FoldChange"]) > lfc]
 
@@ -166,6 +175,32 @@ def dgea_server(input, output, session, _adata: reactive.Value[ad.AnnData]):
             return None
         
         sns.clustermap(counts_df.T, cmap="viridis", figsize=(10, 10))
+
+    @output
+    @sw.render_plotly
+    def plot_volcano():
+        deseq_results = _deseq_results.get()
+        alpha = input["alpha"].get()
+        lfc = input["lfc"].get()
+
+        if deseq_results is None:
+            return None
+        
+        df_plot = deseq_results.copy()
+        df_plot["-log10(padj)"] = -np.log10(df_plot["padj"])
+        df_plot["category"] = "Not significant"
+        df_plot["gene"] = df_plot.index
+        df_plot.loc[(df_plot["log2FoldChange"] < -lfc) & (df_plot["padj"] < alpha), "category"] = "Downregulated"
+        df_plot.loc[(df_plot["log2FoldChange"] > lfc) & (df_plot["padj"] < alpha), "category"] = "Upregulated"
+
+        colormap = {"Not significant": "grey", "Downregulated": "blue", "Upregulated": "red"}
+        
+        return px.scatter(df_plot, x="log2FoldChange", y="-log10(padj)", color="category",
+                          color_discrete_map=colormap,
+                          hover_name="gene",
+                          labels={"log2FoldChange": "Log2 fold change",
+                                  "-log10(padj)": "-log10(padj)",
+                                  "category": "Category"})
 
 
 def pseudobulk(adata:ad.AnnData, groupby:str):

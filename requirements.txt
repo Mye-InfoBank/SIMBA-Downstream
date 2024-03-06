@@ -1,5 +1,7 @@
 ipykernel
 scanpy
 shiny
+shinywidgets
+plotly
 jinja2
 anndata2ri
