@@ -62,7 +62,7 @@ def plot_dgea_server(input, output, session,
         return plot
 
     @render.download(
-            filename=lambda: f"deseq2_matrix_{input['comparison'].get()}.csv"
+            filename=lambda: f"deseq2_matrix_{_comparison.get()}.csv"
     )
     def download_dgea():
         deseq_results = _result.get()
@@ -73,7 +73,7 @@ def plot_dgea_server(input, output, session,
             return temp.name
         
     @render.download(
-            filename=lambda: f"heatmap_{input['comparison'].get()}.png"
+            filename=lambda: f"heatmap_{_comparison.get()}.png"
     )
     def download_plot():
         plot = _heatmap.get()
