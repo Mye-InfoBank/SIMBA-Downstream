@@ -1,8 +1,8 @@
-from shiny import App, reactive, ui, render
+from shiny import App, reactive, ui
 import scanpy as sc
 
 from composition import composition_server, composition_ui
-from dgea import dgea_server, dgea_ui
+from dgea.dgea import dgea_server, dgea_ui
 
 with open("data/input.txt") as f:
     filename = "data/" + f.read().strip()
