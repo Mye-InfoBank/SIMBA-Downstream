@@ -6,6 +6,7 @@ COPY requirements.* .
 RUN ./requirements.sh
 
 COPY *.py ./
+COPY dgea /app/dgea
 COPY data /app/data
 
 ENV PORT=8080
