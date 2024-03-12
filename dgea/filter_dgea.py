@@ -86,6 +86,5 @@ def filter_dgea_server(input, output, session,
         if not genes:
             return None
         
-        return ui.input_action_button("gprofiler", label="Significant genes - g:Profiler",
-                    href=f"https://biit.cs.ut.ee/gprofiler/gost?organism=hsapiens&query={'%0A'.join(genes)}",
-                    target="_blank")
+        return ui.input_action_button("gprofiler", label="Open g:Profiler",
+                              onclick=f"window.open('https://biit.cs.ut.ee/gprofiler/gost?organism=hsapiens&query={'%0A'.join(genes)}', '_blank')")
