@@ -49,13 +49,8 @@ def get_normalized_counts(dds):
     counts = np.log1p(counts)
     return counts
 
-def get_results(dds, comparison:str):
-    res = deseq.results(dds, contrast=[comparison])
+def get_results(dds, comparison:str, ref: str, alt: str):
+    res = deseq.results(dds, contrast=r('c')(comparison, ref, alt))
     res = r('function(x) data.frame(x)')(res)
     res_df = pandas2ri.rpy2py(res)
     return res_df
-
-def get_comparisons(dds):
-    comparisons = [str(comparison) for comparison in r.resultsNames(dds)]
-    comparisons = [comparison for comparison in comparisons if comparison != "Intercept"]
-    return comparisons

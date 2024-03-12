@@ -6,7 +6,8 @@ from dgea.deseq2 import get_results
 @module.ui
 def filter_dgea_ui():
     return ui.div(
-        ui.output_ui("select_comparison"),
+        ui.output_ui("select_reference"),
+        ui.output_ui("select_alternative"),
         ui.input_slider("alpha", "Alpha (significance threshold)", min=0, max=0.2, step=0.001, value=0.05),
         ui.input_slider("lfc", "Log2 fold change", min=0, max=10, step=0.1, value=1),
         ui.output_ui("open_gprofiler")
@@ -14,38 +15,53 @@ def filter_dgea_ui():
 
 @module.server
 def filter_dgea_server(input, output, session, 
-                       _dds, _counts, _comparisons,
+                       _dds, _counts, _uniques,
                        _result, _filtered_result, _filtered_genes,
-                       _filtered_counts, _comparison, _contrast,
+                       _filtered_counts, _reference, _alternative, _contrast,
                        _alpha, _lfc
                        ):
 
     @output
     @render.ui
-    def select_comparison():
-        comparisons = _comparisons.get()
+    def select_reference():
+        uniques = _uniques.get()
 
-        if not comparisons:
-            return ui.p("Run analysis to see comparisons")
+        if not uniques or len(uniques) < 2:
+            return ui.p("Run analysis to see options")
 
-        return ui.input_select("comparison", "Comparison", choices=comparisons, selected=comparisons[0])
+        return ui.input_select("reference", "Reference", choices=uniques, selected=uniques[0])
+    
+    @output
+    @render.ui
+    def select_alternative():
+        uniques = _uniques.get()
+
+        if not uniques or len(uniques) < 2:
+            return ui.p("Run analysis to see options")
+        
+        print(uniques)
+
+        return ui.input_select("alternative", "Alternative", choices=uniques, selected=uniques[1])
+
 
     @reactive.effect
     def update_filters():
-        _comparison.set(input["comparison"].get())
+        _reference.set(input["reference"].get())
+        _alternative.set(input["alternative"].get())
         _alpha.set(input["alpha"].get())
         _lfc.set(input["lfc"].get())
 
     @reactive.effect
     def update_result():
         dds = _dds.get()
-        comparison = input["comparison"].get()
+        reference = _reference.get()
+        alternative = _alternative.get()
         contrast = _contrast.get()
 
-        if not comparison.startswith(contrast):
+        if None in (dds, reference, alternative, contrast):
             return
 
-        res_df = get_results(dds, comparison)
+        res_df = get_results(dds, contrast, reference, alternative)
         _result.set(res_df)
     
     @reactive.effect

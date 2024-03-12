@@ -26,7 +26,8 @@ def plot_dgea_ui():
 def plot_dgea_server(input, output, session,
                      _filtered_counts,
                      _contrast,
-                     _comparison,
+                     _reference,
+                     _alternative,
                      _design_matrix,
                      _result,
                      _alpha,
@@ -39,17 +40,15 @@ def plot_dgea_server(input, output, session,
     def plot_heatmap():
         counts_df = _filtered_counts.get()
         contrast = _contrast.get()
-        comparison = _comparison.get()
+        reference = _reference.get()
+        alternative = _alternative.get()
         design_matrix = _design_matrix.get()
 
         if counts_df is None \
             or contrast not in design_matrix.columns:
             return None
-        
-        comparison = comparison[len(contrast)+1:]
-        groups = comparison.split("_vs_")
-        
-        design_matrix = design_matrix[design_matrix[contrast].isin(groups)]
+
+        design_matrix = design_matrix[design_matrix[contrast].isin([reference, alternative])]
         counts_df = counts_df.loc[:, design_matrix.index]
 
         if counts_df.empty:
@@ -62,7 +61,7 @@ def plot_dgea_server(input, output, session,
         return plot
 
     @render.download(
-            filename=lambda: f"deseq2_matrix_{_comparison.get()}.csv"
+            filename=lambda: f"deseq2_matrix_{_contrast.get()}-{_reference.get()}:{_alternative.get()}.csv"
     )
     def download_dgea():
         deseq_results = _result.get()
@@ -73,7 +72,7 @@ def plot_dgea_server(input, output, session,
             return temp.name
         
     @render.download(
-            filename=lambda: f"heatmap_{_comparison.get()}.png"
+            filename=lambda: f"heatmap_{_contrast.get()}-{_reference.get()}:{_alternative.get()}.png"
     )
     def download_plot():
         plot = _heatmap.get()

@@ -2,7 +2,7 @@ from shiny import reactive, ui, render, module
 import anndata as ad
 import pandas as pd
 
-from dgea.deseq2 import pseudobulk, get_formula, get_dds, get_normalized_counts, get_comparisons
+from dgea.deseq2 import pseudobulk, get_formula, get_dds, get_normalized_counts
 
 
 @module.ui
@@ -16,7 +16,7 @@ def run_dgea_server(input, output, session,
                     _dds: reactive.Value,
                     _design_matrix: reactive.Value[pd.DataFrame],
                     _counts: reactive.Value[pd.DataFrame],
-                    _comparisons: reactive.Value[list],
+                    _uniques: reactive.Value[list],
                     _contrast: reactive.Value[str]):
     _category_columns = reactive.value([])
     _numeric_columns = reactive.value([])
@@ -44,7 +44,6 @@ def run_dgea_server(input, output, session,
     @reactive.effect
     @reactive.event(input["run"])
     def handle_run():
-        print("Handle")
         adata = _adata.get()
         contrast = _contrast.get()
         run_deseq(adata, contrast)
@@ -71,10 +70,10 @@ def run_dgea_server(input, output, session,
         return dds, df_counts, design
 
     @reactive.effect
-    def update_comparisons():
-        dds = _dds.get()
-
-        if dds is None:
+    def update_uniques():
+        adata = _adata.get()
+        contrast = _contrast.get()
+        if adata is None or contrast is None:
             return
-
-        _comparisons.set(get_comparisons(dds))
+        uniques = adata.obs[contrast].unique().tolist()
+        _uniques.set(uniques)
