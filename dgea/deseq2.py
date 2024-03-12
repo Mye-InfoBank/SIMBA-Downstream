@@ -8,7 +8,7 @@ from rpy2.robjects.packages import importr
 pandas2ri.activate()
 deseq = importr('DESeq2')
 
-def pseudobulk(adata:ad.AnnData, groupby:str):
+def pseudobulk(adata:ad.AnnData, groupby:str):    
     groups = np.array(adata.obs[groupby].unique())
     groups = groups[~pd.isnull(groups)]
     reps = []
@@ -21,7 +21,9 @@ def pseudobulk(adata:ad.AnnData, groupby:str):
         split_index = np.array_split(index,5)
         for n,split in enumerate(split_index):
             subset_group = adata_group[split,:]
-            pb_rep = np.array(np.sum(subset_group.layers["counts"], axis=0)).ravel()
+            pb_rep = np.array(np.sum(
+                subset_group.layers["counts"] if "counts"
+                in subset_group.layers else subset_group.X, axis=0)).ravel()
             reps.append(pb_rep)
             obs_name = f'{group}_bulk_{n}'
             group_dict[obs_name] = group
