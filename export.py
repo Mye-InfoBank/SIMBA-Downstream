@@ -17,9 +17,6 @@ def get_cell_labels():
     regex = re.compile(r".*-cell-labels-[A-Z0-9]+.csv")
     return get_files(regex)
 
-def format_download_id(original: str):
-    return os.path.basename(original).replace('-', '_')[:-4]
-
 
 @module.ui
 def export_ui():
