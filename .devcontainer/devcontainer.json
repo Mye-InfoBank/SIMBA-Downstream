@@ -23,7 +23,7 @@
 	// "forwardPorts": [],
 
 	// Use 'postCreateCommand' to run commands after the container is created.
-	"postCreateCommand": "./requirements.sh",
+	"postCreateCommand": "./requirements_sudo.sh",
 
 	// Configure tool-specific properties.
 	"customizations": {
