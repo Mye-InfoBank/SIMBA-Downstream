@@ -7,8 +7,9 @@ from export import export_ui, export_server
 from dgea.dgea import dgea_server, dgea_ui
 
 with open("data/input.txt") as f:
-    filename = "data/" + f.read().strip()
-    name = filename.replace(".h5ad", "")
+    file_list = f.readlines()
+    filename = "data/" + file_list[0].strip()
+    name = file_list[1].strip()
 
 
 adata = sc.read_h5ad(filename)
