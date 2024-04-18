@@ -94,16 +94,30 @@ def plot_dgea_server(input, output, session,
         
         df_plot = deseq_results.copy()
         df_plot["-log10(padj)"] = -np.log10(df_plot["padj"])
+        min_value = 1e-100
+        df_plot["p-value"] = df_plot["padj"].apply(lambda x: x if x > min_value else f"less than {min_value}")
+
         df_plot["category"] = "Not significant"
         df_plot["gene"] = df_plot.index
-        df_plot.loc[(df_plot["log2FoldChange"] < -lfc) & (df_plot["padj"] < alpha), "category"] = "Downregulated"
-        df_plot.loc[(df_plot["log2FoldChange"] > lfc) & (df_plot["padj"] < alpha), "category"] = "Upregulated"
+        #df_plot.loc[(df_plot["log2FoldChange"] < -lfc) & (df_plot["padj"] < alpha), "category"] = "Downregulated"
+        #df_plot.loc[(df_plot["log2FoldChange"] > lfc) & (df_plot["padj"] < alpha), "category"] = "Upregulated"
+        df_plot.loc[(df_plot["log2FoldChange"] < -lfc) & (df_plot["padj"] < alpha), "category"] = f"High in {_alternative.get()}"
+        df_plot.loc[(df_plot["log2FoldChange"] > lfc) & (df_plot["padj"] < alpha), "category"] = f"High in {_reference.get()}"
 
-        colormap = {"Not significant": "grey", "Downregulated": "blue", "Upregulated": "red"}
+        colormap = {"Not significant": "grey", f"High in {_alternative.get()}": "blue", f"High in {_reference.get()}": "red"}
+        
+        hover_data = {
+            "log2FoldChange": True,
+            "-log10(padj)": True,
+            "p-value": True,
+            "category": True,
+        }
         
         return px.scatter(df_plot, x="log2FoldChange", y="-log10(padj)", color="category",
                           color_discrete_map=colormap,
                           hover_name="gene",
+                          hover_data=hover_data,
                           labels={"log2FoldChange": "Log2 fold change",
                                   "-log10(padj)": "-log10(padj)",
+                                  "p-value": "P value",
                                   "category": "Category"})
