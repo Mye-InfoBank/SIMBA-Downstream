@@ -99,8 +99,6 @@ def plot_dgea_server(input, output, session,
 
         df_plot["category"] = "Not significant"
         df_plot["gene"] = df_plot.index
-        #df_plot.loc[(df_plot["log2FoldChange"] < -lfc) & (df_plot["padj"] < alpha), "category"] = "Downregulated"
-        #df_plot.loc[(df_plot["log2FoldChange"] > lfc) & (df_plot["padj"] < alpha), "category"] = "Upregulated"
         df_plot.loc[(df_plot["log2FoldChange"] < -lfc) & (df_plot["padj"] < alpha), "category"] = f"High in {_alternative.get()}"
         df_plot.loc[(df_plot["log2FoldChange"] > lfc) & (df_plot["padj"] < alpha), "category"] = f"High in {_reference.get()}"
 
@@ -108,7 +106,6 @@ def plot_dgea_server(input, output, session,
         
         hover_data = {
             "log2FoldChange": True,
-            "-log10(padj)": True,
             "p-value": True,
             "category": True,
         }
@@ -118,6 +115,5 @@ def plot_dgea_server(input, output, session,
                           hover_name="gene",
                           hover_data=hover_data,
                           labels={"log2FoldChange": "Log2 fold change",
-                                  "-log10(padj)": "-log10(padj)",
                                   "p-value": "P value",
                                   "category": "Category"})
