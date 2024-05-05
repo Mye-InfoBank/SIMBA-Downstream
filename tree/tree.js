@@ -5,7 +5,12 @@ if (Shiny) {
         }
 
         renderValue(el, payload) {
-            new ForceGraph3D()(el).graphData(payload);
+            const graph = new ForceGraph3D()
+                .dagMode("td")
+                .dagLevelDistance(200)
+                .backgroundColor('#101020')
+            
+            graph(el).graphData(payload);
         }
     }
 
