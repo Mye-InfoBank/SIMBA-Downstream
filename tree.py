@@ -56,7 +56,9 @@ def tree_ui():
 
 @module.server
 def tree_server(input, output, session, _tree: reactive.Value[scHPL.TreeNode]):
+
     @output
     @render_tree
     def tree():
-        return format(_tree.get()[0])
+        cur_tree = _tree.get()
+        return format(cur_tree[0]) if cur_tree else {}

@@ -11,7 +11,7 @@ from tree import tree_server, tree_ui
 with open("data/config.json") as f:
     config = json.load(f)
     adata = sc.read_h5ad("data/" + config["adata"])
-    tree = pickle.load(open("data/" + config["tree"], "rb"))
+    tree = pickle.load(open("data/" + config["tree"], "rb")) if "tree" in config else None
     name = config["name"]
 
 categorical_columns = adata.obs.select_dtypes(include="category").columns.to_list()
