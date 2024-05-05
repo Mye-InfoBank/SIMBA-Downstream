@@ -1,26 +1,20 @@
 from shiny import App, reactive, ui
 import scanpy as sc
-import os
 import pickle
-import scHPL
+import json
 
 from composition import composition_server, composition_ui
 from export import export_ui, export_server
 from dgea.dgea import dgea_server, dgea_ui
 from tree import tree_server, tree_ui
 
-with open("data/input.txt") as f:
-    file_list = f.readlines()
-    filename = "data/" + file_list[0].strip()
-    treename = "data/" + file_list[1].strip()
-    name = file_list[2].strip()
+with open("data/config.json") as f:
+    config = json.load(f)
+    adata = sc.read_h5ad("data/" + config["adata"])
+    tree = pickle.load(open("data/" + config["tree"], "rb"))
+    name = config["name"]
 
-
-adata = sc.read_h5ad(filename)
 categorical_columns = adata.obs.select_dtypes(include="category").columns.to_list()
-
-tree = pickle.load(open(treename, "rb"))
-
 
 app_ui = ui.page_navbar(
     ui.nav_panel("Composition analysis",
