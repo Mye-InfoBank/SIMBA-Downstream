@@ -1,11 +1,31 @@
 from shiny import reactive, ui, render, module
 import scHPL
-import json
 from typing import List
+from shiny.render.renderer import Jsonifiable, Renderer
+from htmltools import HTMLDependency
 
-@module.ui
-def tree_ui():
-    return ui.output_text("tree")
+tree_dep = HTMLDependency(
+    "tree",
+    "1.0.0",
+    source={"subdir": "tree"},
+    script={"src": "tree.js", "type": "module"},
+    all_files=True
+)
+
+def output_tree(id):
+    return ui.div(
+        ui.HTML("<script src='//unpkg.com/3d-force-graph'></script>"),
+        tree_dep,
+        id=module.resolve_id(id),
+        class_="shiny-tree-output"
+    )
+
+class render_tree(Renderer[dict]):
+    def auto_output_ui(self):
+        return ui.ouptut_tree(self.ouptut_name)
+    
+    async def transform(self, value: dict):
+        return value
 
 def format(node: scHPL.TreeNode):
     nodes = []
@@ -22,10 +42,13 @@ def format(node: scHPL.TreeNode):
 
     return {"nodes": nodes, "links": links}
 
+@module.ui
+def tree_ui():
+    return output_tree("tree")
+
 @module.server
 def tree_server(input, output, session, _tree: reactive.Value[scHPL.TreeNode]):
     @output
-    @render.text
+    @render_tree
     def tree():
-        data = format(_tree.get()[0])
-        return json.dumps(data, indent=4)
+        return format(_tree.get()[0])
