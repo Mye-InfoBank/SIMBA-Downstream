@@ -33,12 +33,20 @@ def format(node: scHPL.TreeNode):
 
     def format_name(name: List[str]):
         return " & ".join(name)
-
-    for current in node.walk():
-        cur_name = format_name(current.name)
-        nodes.append({"name": cur_name, "id": hash(cur_name)})
-        for child in current.descendants:
+    
+    def traverse(node: scHPL.TreeNode, level: int = 0):
+        cur_name = format_name(node.name)
+        value = {"name": cur_name, "id": hash(cur_name)}
+        if level <= 1:
+            value["group"] = cur_name
+        elif level > 1:
+            value["group"] = format_name(node.ancestor.name)
+        nodes.append(value)
+        for child in node.descendants:
             links.append({"source": hash(cur_name), "target": hash(format_name(child.name))})
+            traverse(child, level + 1)
+
+    traverse(node)
 
     return {"nodes": nodes, "links": links}
 

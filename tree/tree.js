@@ -11,6 +11,7 @@ if (Shiny) {
                 .backgroundColor('#101020')
                 .linkColor(() => 'rgba(255,255,255,0.2)')
                 .nodeOpacity(0.9)
+                .nodeAutoColorBy('group')
                 .linkDirectionalParticles(2)
                 .linkDirectionalParticleWidth(0.8)
                 .linkDirectionalParticleSpeed(0.006)
