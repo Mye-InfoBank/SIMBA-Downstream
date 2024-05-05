@@ -39,9 +39,10 @@ app_ui = ui.page_navbar(
 def server(input, output, session):
     _dataframe = reactive.value(adata.obs)
     _adata = reactive.value(adata)
+    _tree = reactive.value(tree)
     composition_server("composition", _dataframe)
     export_server("export")
     dgea_server("dgea", _adata)
-    tree_server("tree")
+    tree_server("tree", _tree)
 
 app = App(app_ui, server)
