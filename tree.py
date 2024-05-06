@@ -22,7 +22,7 @@ def output_tree(id):
 
 class render_tree(Renderer[dict]):
     def auto_output_ui(self):
-        return ui.ouptut_tree(self.ouptut_name)
+        return ui.output_tree(self.output_name)
     
     async def transform(self, value: dict):
         return value
