@@ -8,6 +8,7 @@ RUN conda env create -f environment.yml
 COPY *.py ./
 COPY dgea dgea
 COPY data data
+COPY tree tree
 
 ENV PORT=8080
 
