@@ -6,28 +6,29 @@ import anndata as ad
 import os
 
 import torch
-from scvi.model import SCANVI
+from scvi.model import SCANVI, SCVI
 
-directory_model = "data/"
-model_path = os.path.join(directory_model, "model.pt")
-model_to_load = torch.load(model_path, map_location=torch.device('cpu'))
-#print(model_to_load) 
-print(type(model_to_load)) 
-
-#print(hasattr(model_to_load, 'genes')) 
-#print(hasattr(model_to_load, 'decoder'))
 
 
 def scanvi_dgea(adata:ad.AnnData, groupby:str):
     
-    if not isinstance(model_to_load, SCANVI):
+    directory_model = "data/"
+    model_path = os.path.join(directory_model, "model.pt")
+    #weights_biases = torch.load(model_path, map_location=torch.device('cpu'))
+    
+    SCVI.setup_anndata(adata)
+    scanvi_model = SCANVI.load(directory_model, adata=adata)
+    print(type(scanvi_model))
+    
+    
+    scanvi_model = SCANVI(adata)
+    
+    scanvi_model.load_state_dict(weights_biases)
+
+    if not isinstance(scanvi_model, SCANVI):
         raise ValueError("Loaded model is not a trained scVI model instance.")
     
-    labels_key = "labels"
-    unlabeled_category = "unlabeled"
-    SCANVI.setup_anndata(adata, labels_key=labels_key, unlabeled_category=unlabeled_category)
-    
-    scanvi_model = SCANVI.from_scvi_model(model_to_load, adata)
+    #scanvi_model = SCANVI.from_scvi_model(model_to_load, adata)
     
     groups = np.array(adata.obs[groupby].unique())
     
