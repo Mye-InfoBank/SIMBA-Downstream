@@ -1,7 +1,7 @@
 from shiny import reactive, ui, render, module
 import anndata as ad
 
-from dgea.run_dgea import run_dgea_ui, run_dgea_server
+from dgea.run_dgea_ import run_dgea_ui, run_dgea_server
 from dgea.filter_dgea import filter_dgea_ui, filter_dgea_server
 from dgea.plot_dgea import plot_dgea_ui, plot_dgea_server
 
