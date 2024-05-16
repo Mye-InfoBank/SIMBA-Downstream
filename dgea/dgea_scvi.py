@@ -33,4 +33,4 @@ def scanvi_dgea(adata:ad.AnnData, groupby:str, reference:str, alternative:str):
 adata = sc.read_h5ad("data/atlas.h5ad")  
 print(adata.obs["cell_type"].value_counts())
 test_dge = scanvi_dgea(adata, "cell_type", "Epithelial", "Endothelial")
-print(test_dge.head())
+print(test_dge.columns)
