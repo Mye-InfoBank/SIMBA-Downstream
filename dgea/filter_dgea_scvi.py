@@ -8,15 +8,15 @@ def filter_dgea_ui():
     return ui.div(
         ui.output_ui("select_reference"),
         ui.output_ui("select_alternative"),
-        ui.input_slider("log10_pscore", "Ropability in Reference (significance threshold)", min=0, max=1, step=0.01, value=0.8),
+        ui.input_slider("log10_pscore", "Ropability in Reference (significance threshold)", min=0, max=100, step=0.01, value=3),
         ui.input_slider("lfc", "Log2 fold change", min=0, max=10, step=0.1, value=1),
         ui.output_ui("open_gprofiler")
     )
 
 @module.server
 def filter_dgea_server(input, output, session, 
-                       _adata, _uniques,
-                       _result, _filtered_result, _filtered_genes, 
+                       _adata, _counts, _uniques,
+                       _result, _filtered_result, _filtered_genes, _filtered_counts,
                        _reference, _alternative, _contrast,
                        _log10_p, _lfc
                        ):
@@ -69,6 +69,7 @@ def filter_dgea_server(input, output, session,
         result = _result.get()
         log10_p = input["log10_pscore"].get()
         lfc = input["lfc"].get()
+        counts = _counts.get()
 
         if result is None:
             return None
@@ -77,6 +78,7 @@ def filter_dgea_server(input, output, session,
         _filtered_result.set(result)
         genes = result.index.tolist()
         _filtered_genes.set(genes)
+        _filtered_counts.set(counts.loc[:, genes])
 
     @render.ui
     def open_gprofiler():

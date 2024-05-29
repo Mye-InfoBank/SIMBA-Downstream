@@ -7,7 +7,6 @@ import os
 
 import torch
 from scvi.model import SCANVI, SCVI
-from scvi.data import poisson_gene_selection
 
 def scanvi_dgea(adata:ad.AnnData, groupby:str, reference:str, alternative:str):
     
@@ -16,8 +15,7 @@ def scanvi_dgea(adata:ad.AnnData, groupby:str, reference:str, alternative:str):
     model_path = os.path.join(directory_model, "model.pt")
     #weights_biases = torch.load(model_path, map_location=torch.device('cpu'))
     
-    #poisson_gene_selection(adata)
-    #adata.var.head()
+    #adata.layers["counts"] = adata.X.copy().tocsr()
     
     SCANVI.prepare_query_anndata(adata = adata, reference_model=directory_model)
     
@@ -35,12 +33,24 @@ def scanvi_dgea(adata:ad.AnnData, groupby:str, reference:str, alternative:str):
 
     return dge_change
 
+def get_normalized_counts(adata):
+    sc.pp.normalize_total(adata, target_sum=1e4)
+    sc.pp.log1p(adata)
+    adata.layers["counts"] = adata.X.copy().tocsr()
+    counts = adata.layers["counts"]
+    dense_matrix = counts.toarray()
+    df_counts = pd.DataFrame(dense_matrix, index=adata.obs_names, columns=adata.var_names)
+    return df_counts
+    
+
 adata = sc.read_h5ad("data/atlas.h5ad")  
 print(adata.obs["cell_type"].value_counts())
 test_dge = scanvi_dgea(adata, "cell_type", "Epithelial", "Endothelial")
+test_counts = get_normalized_counts(adata)
 print(test_dge['proba_de'].min(), test_dge['proba_de'].max())
 print(test_dge['proba_not_de'].min(), test_dge['proba_not_de'].max())
-print(test_dge['-log10_pscore'].min(), test_dge['-log10_pscore'].max())
+#print(test_dge['-log10_pscore'].min(), test_dge['-log10_pscore'].max())
 print(test_dge['lfc_mean'].min(), test_dge['lfc_mean'].max())
 print(test_dge.head(5))
 print(test_dge.columns)
+print(test_counts.head(5))

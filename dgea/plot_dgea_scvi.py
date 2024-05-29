@@ -16,7 +16,7 @@ def plot_dgea_ui():
             ui.card_header("Heatmap"),
             ui.output_plot("plot_heatmap"),
             ui.card_footer(
-                ui.download_button("download_dgea", "Download DESeq2 matrix"),
+                ui.download_button("download_dgea", "Download DGEA matrix"),
                 ui.download_button("download_plot", "Download plot")
             )
         )
@@ -41,34 +41,27 @@ def plot_dgea_server(input, output, session,
         contrast = _contrast.get()
         reference = _reference.get()
         alternative = _alternative.get()
-        design_matrix = _design_matrix.get()
 
-        if counts_df is None \
-            or contrast not in design_matrix.columns:
+        if counts_df is None:
             return None
-
-        design_matrix = design_matrix[design_matrix[contrast].isin([reference, alternative])]
-        counts_df = counts_df.loc[:, design_matrix.index]
 
         if counts_df.empty:
             return None
 
         plot = sns.clustermap(counts_df.T, cmap="viridis", figsize=(10, 10))
-        
-
         _heatmap.set(plot)
 
         return plot
 
     @render.download(
-            filename=lambda: f"deseq2_matrix_{_contrast.get()}-{_reference.get()}:{_alternative.get()}.csv"
+            filename=lambda: f"dgea_matrix_{_contrast.get()}-{_reference.get()}:{_alternative.get()}.csv"
     )
     def download_dgea():
-        deseq_results = _result.get()
-        if deseq_results is None:
+        scanvi_results = _result.get()
+        if scanvi_results is None:
             return None
         with tempfile.NamedTemporaryFile(suffix=".csv", delete=False) as temp:
-            deseq_results.to_csv(temp.name)
+            scanvi_results.to_csv(temp.name)
             return temp.name
         
     @render.download(
@@ -115,5 +108,5 @@ def plot_dgea_server(input, output, session,
                           hover_name="gene",
                           hover_data=hover_data,
                           labels={"lfc_mean": "Log2 fold change mean",
-                                  "-log10_pscore": "Negative log 10 P value",
+                                  "-log10_pscore": "Negative log 10 P-value",
                                   "category": "Category"})
