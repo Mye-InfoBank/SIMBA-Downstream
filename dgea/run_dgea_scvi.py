@@ -25,7 +25,7 @@ def run_dgea_server(input, output, session,
     @reactive.effect
     def update_columns():
         obs = _adata.get().obs
-        obs = obs.loc[:, obs.unique() > 1]
+        obs = obs.loc[:, obs.nunique() > 1]
 
         _category_columns.set(obs.select_dtypes(include=["category", "object"]).columns.to_list())
         _numeric_columns.set(obs.select_dtypes(include="number").columns.to_list())

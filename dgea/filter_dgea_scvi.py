@@ -1,7 +1,7 @@
 from shiny import reactive, ui, render, module
 import anndata as ad
 import pandas as pd
-from dgea.dgea_scvi import scanvi_dgea
+from dgea.dgea_scvi import scanvi_dgea, get_normalized_counts
 
 @module.ui
 def filter_dgea_ui():
@@ -58,11 +58,13 @@ def filter_dgea_server(input, output, session,
         alternative = _alternative.get()
         contrast = _contrast.get()
 
-        if None in (adata, reference, alternative, contrast):
+        if None in (reference, alternative, contrast):
             return
 
-        res_df = scanvi_dgea(adata, reference, alternative, contrast)
+        res_df = scanvi_dgea(adata, contrast, reference, alternative)
+        res_counts = get_normalized_counts(adata)
         _result.set(res_df)
+        _counts.set(res_counts)
     
     @reactive.effect
     def filter_result():
@@ -70,6 +72,8 @@ def filter_dgea_server(input, output, session,
         log10_p = input["log10_pscore"].get()
         lfc = input["lfc"].get()
         counts = _counts.get()
+        print(counts)
+        print('HIII')
 
         if result is None:
             return None
@@ -77,6 +81,9 @@ def filter_dgea_server(input, output, session,
         result = result[(result["-log10_pscore"] < log10_p) & (result["lfc_mean"].abs() > lfc)]
         _filtered_result.set(result)
         genes = result.index.tolist()
+        genes_not_found = [gene for gene in genes if gene not in counts.columns]
+        if genes_not_found:
+            print(f"Genes not found in the DataFrame: {genes_not_found}")
         _filtered_genes.set(genes)
         _filtered_counts.set(counts.loc[:, genes])
 

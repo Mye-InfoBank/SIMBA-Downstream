@@ -86,7 +86,7 @@ def plot_dgea_server(input, output, session,
             return None
         
         df_plot = scanvi_results.copy()
-        df_plot["-log10_pscore"] = -np.log10(df_plot["log10_pscore"])
+        #df_plot["-log10_pscore"] = -np.log10(df_plot["log10_pscore"])
         min_value = 1e-100
         #df_plot["p-value"] = df_plot["padj"].apply(lambda x: x if x > min_value else f"less than {min_value}")
 
