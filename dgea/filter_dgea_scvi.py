@@ -49,7 +49,7 @@ def filter_dgea_server(input, output, session,
         _reference.set(input["reference"].get())
         _alternative.set(input["alternative"].get())
         _log10_p.set(input["log10_pscore"].get())
-        _lfc.set(input["lfc_mean"].get())
+        _lfc.set(input["lfc"].get())
 
     @reactive.effect
     def update_result():
