@@ -25,6 +25,9 @@ def scanvi_dgea(adata:ad.AnnData, groupby:str, reference:str, alternative:str):
     idx2 = adata.obs[groupby] == alternative
     
     dge_change = scanvi_model.differential_expression(adata=adata, groupby=groupby, idx1=idx1, idx2=idx2, mode="change")
+    
+    epsilon = 1e-10
+    dge_change['proba_not_de'] = np.maximum(dge_change["proba_not_de"], epsilon)
     dge_change["log10_pscore"] = np.log10(dge_change["proba_not_de"])
     dge_change["-log10_pscore"] = -np.log10(dge_change["proba_not_de"])	
     

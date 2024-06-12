@@ -8,7 +8,7 @@ def filter_dgea_ui():
     return ui.div(
         ui.output_ui("select_reference"),
         ui.output_ui("select_alternative"),
-        ui.input_slider("log10_pscore", "Ropability in Reference (significance threshold)", min=0, max=100, step=0.01, value=3),
+        ui.input_slider("log10_pscore", "Ropability in Reference (significance threshold)", min=0, max=20, step=0.01, value=3),
         ui.input_slider("lfc", "Log2 fold change", min=0, max=10, step=0.1, value=1),
         ui.output_ui("open_gprofiler")
     )
@@ -72,8 +72,6 @@ def filter_dgea_server(input, output, session,
         log10_p = input["log10_pscore"].get()
         lfc = input["lfc"].get()
         counts = _counts.get()
-        print(counts)
-        print('HIII')
 
         if result is None:
             return None
