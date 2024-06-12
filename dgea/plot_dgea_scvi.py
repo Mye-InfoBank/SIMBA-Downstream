@@ -100,10 +100,17 @@ def plot_dgea_server(input, output, session,
             "category": True,
         }
         
-        return px.scatter(df_plot, x="lfc_mean", y="-log10_pscore", color="category",
+        fig = px.scatter(df_plot, x="lfc_mean", y="-log10_pscore", color="category",
                           color_discrete_map=colormap,
                           hover_name="gene",
                           hover_data=hover_data,
                           labels={"lfc_mean": "Log2 fold change mean",
                                   "-log10_pscore": "Negative log 10 P-value",
                                   "category": "Category"})
+        
+        num_points = len(df_plot)
+        fig.add_annotation(text=f"number of counts = {num_points}", x=0.5, y=-0.15, showarrow=False, font=dict(size=12), xanchor="center")
+        fig.update_layout(margin=dict(l=40, r=40, b=80, t=40), height=600)
+        
+        return fig
+        
