@@ -6,9 +6,10 @@ from dgea.dgea_scvi import scanvi_dgea, get_normalized_counts
 @module.ui
 def filter_dgea_ui():
     return ui.div(
+        ui.output_ui("select_subset_value"),
         ui.output_ui("select_reference"),
         ui.output_ui("select_alternative"),
-        ui.input_slider("log10_pscore", "Ropability in Reference (significance threshold)", min=0, max=100, step=0.01, value=3),
+        ui.input_slider("log10_pscore", "Ropability in Reference (significance threshold)", min=0, max=20, step=0.01, value=3),
         ui.input_slider("lfc", "Log2 fold change", min=0, max=10, step=0.1, value=1),
         ui.output_ui("open_gprofiler")
     )
@@ -17,10 +18,20 @@ def filter_dgea_ui():
 def filter_dgea_server(input, output, session, 
                        _adata, _counts, _uniques,
                        _result, _filtered_result, _filtered_genes, _filtered_counts,
-                       _reference, _alternative, _contrast,
+                       _reference, _alternative, _contrast, _sub_category, _uniques_sub, _chosen_sub,
                        _log10_p, _lfc
                        ):
 
+    @output
+    @render.ui
+    def select_subset_value():
+        uniques = _uniques_sub.get()
+
+        if not uniques:
+            return ui.p("Run analysis to see options")
+
+        return ui.input_select("subset_options", "Subset options", choices=uniques, selected=uniques[0])
+    
     @output
     @render.ui
     def select_reference():
@@ -46,6 +57,7 @@ def filter_dgea_server(input, output, session,
 
     @reactive.effect
     def update_filters():
+        _chosen_sub.set(input["subset_options"].get())
         _reference.set(input["reference"].get())
         _alternative.set(input["alternative"].get())
         _log10_p.set(input["log10_pscore"].get())
@@ -72,8 +84,6 @@ def filter_dgea_server(input, output, session,
         log10_p = input["log10_pscore"].get()
         lfc = input["lfc"].get()
         counts = _counts.get()
-        print(counts)
-        print('HIII')
 
         if result is None:
             return None

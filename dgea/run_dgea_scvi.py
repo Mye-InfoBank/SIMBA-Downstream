@@ -8,6 +8,7 @@ from dgea.dgea_scvi import scanvi_dgea, get_normalized_counts
 @module.ui
 def run_dgea_ui():
     return ui.div(ui.output_ui("contrast_selector"),
+                  ui.output_ui("subset_selector"),
               ui.input_task_button("run", "Run analysis"))
 
 @module.server
@@ -18,7 +19,10 @@ def run_dgea_server(input, output, session,
                     _reference: reactive.Value[str],
                     _alternative: reactive.Value[str],
                     _uniques: reactive.Value[list],
-                    _contrast: reactive.Value[str]):
+                    _contrast: reactive.Value[str],
+                    _sub_category: reactive.Value[str],
+                    _uniques_sub: reactive.Value[list],
+                    _chosen_sub: reactive.Value[str]):
     _category_columns = reactive.value([])
     _numeric_columns = reactive.value([])
 
@@ -37,10 +41,23 @@ def run_dgea_server(input, output, session,
 
         return ui.input_select("contrast", "Contrast", choices=columns, selected=columns[0])
     
+    @output
+    @render.ui
+    def subset_selector():
+        columns = _category_columns.get()
+
+        return ui.input_select("sub_category", "Category to subset", choices=columns, selected=columns[0])
+    
     @reactive.effect
     def update_contrast():
         contrast = input["contrast"].get()
         _contrast.set(contrast)
+        
+    def update_subset():
+        sub_category = input["sub_category"].get()
+        _sub_category.set(sub_category)
+        uniques_sub = _adata.get().obs[sub_category].unique().tolist()
+        _uniques_sub.set(uniques_sub)
 
     @reactive.effect
     @reactive.event(input["run"])

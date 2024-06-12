@@ -6,6 +6,7 @@ import json
 from composition import composition_server, composition_ui
 from export import export_ui, export_server
 from dgea.dgea_1 import dgea_server, dgea_ui
+#from dgea.dgea import dgea_server, dgea_ui
 from tree import tree_server, tree_ui
 
 with open("data/config.json") as f:
