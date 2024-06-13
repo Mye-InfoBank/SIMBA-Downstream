@@ -10,13 +10,25 @@ from scvi.model import SCANVI, SCVI
 
 def scanvi_dgea(adata:ad.AnnData, groupby:str, reference:str, alternative:str):
      
-    directory_model = "data/"
+    directory_model = "model_scvi_test/"
     model_path = os.path.join(directory_model, "model.pt")
     print(reference, alternative)
     
-    SCANVI.prepare_query_anndata(adata = adata, reference_model=directory_model)
+    loaded_model = SCVI.load(directory_model, adata=None)
+
+    # Check the type of the loaded model
+    if isinstance(loaded_model, SCVI):
+        scanvi_model = SCANVI.from_scvi_model(loaded_model, unlabeled_category = 'Unknown', labels_key="cell_type")
+        print('is scvi')
+    elif isinstance(loaded_model, SCANVI):
+        scanvi_model = loaded_model
+        print('is scanvi')
+    else:
+        raise ValueError("The model is of an unknown type.")
+        
+    scanvi_model.prepare_query_anndata(adata = adata, reference_model=directory_model)
     
-    scanvi_model = SCANVI.load_query_data(adata, directory_model)
+    scanvi_model = scanvi_model.load_query_data(adata, directory_model)
     print(type(scanvi_model))
     
     groups = np.array(adata.obs[groupby].unique())
@@ -42,4 +54,6 @@ def get_normalized_counts(adata):
     dense_matrix = counts.toarray()
     df_counts = pd.DataFrame(dense_matrix, index=adata.obs_names, columns=adata.var_names)
     return df_counts
-    
+
+adata = sc.read_h5ad('model_scvi_test/adata.h5ad')
+dge_test = scanvi_dgea(adata, "cell_type", "Endothelial", "Epithelial")
