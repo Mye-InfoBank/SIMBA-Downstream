@@ -1,50 +1,40 @@
-import numpy as np
-import pandas as pd
-import scanpy as sc
+from shiny import reactive, ui, render, module
 import anndata as ad
 
-from scvi.model import SCANVI, SCVI
+from dgea.run_dgea_scvi import run_dgea_ui, run_dgea_server
+from dgea.filter_dgea_scvi import filter_dgea_ui, filter_dgea_server
+from dgea.plot_dgea_scvi import plot_dgea_ui, plot_dgea_server
 
-def scanvi_dgea(adata:ad.AnnData, groupby:str, reference:str, alternative:str, directory_model:str):
-          
-    if 'cell_type' in adata.obs.columns:
-        model_type = SCANVI
-        print('is scavi')
-        
-    else:
-        model_type = SCVI
-        print('is scanvi')
-  
-    model_type.prepare_query_anndata(adata = adata, reference_model=directory_model)
-    
-    model = model_type.load_query_data(adata, directory_model)
-    
-    groups = np.array(adata.obs[groupby].unique())
+@module.ui
+def dgea_ui():
+    return ui.layout_sidebar(
+                     ui.sidebar(
+                        run_dgea_ui("run_dgea"),
+                        filter_dgea_ui("filter_dgea"),
+                        title="Select covariates"
+                     ),
+                     *plot_dgea_ui("plot_dgea")
+                    )
 
-    idx1 = adata.obs[groupby] == reference
-    idx2 = adata.obs[groupby] == alternative
-    
-    dge_change = model.differential_expression(adata=adata, groupby=groupby, idx1=idx1, idx2=idx2, mode="change")
-    
-    epsilon = 1e-10
-    dge_change['proba_not_de'] = np.maximum(dge_change["proba_not_de"], epsilon)
-    dge_change["log10_pscore"] = np.log10(dge_change["proba_not_de"])
-    dge_change["-log10_pscore"] = -np.log10(dge_change["proba_not_de"])	
-    
-    return dge_change
+@module.server
+def dgea_server(input, output, session, _adata: reactive.Value[ad.AnnData]):
+    _counts = reactive.value(None)
+    _uniques = reactive.value([])
 
-def get_normalized_counts(adata):
-    print(adata.shape)
-    sc.pp.normalize_total(adata, target_sum=1e4)
-    sc.pp.log1p(adata)
-    adata.layers["counts"] = adata.X.copy().tocsr()
-    counts = adata.layers["counts"]
-    dense_matrix = counts.toarray()
-    df_counts = pd.DataFrame(dense_matrix, index=adata.obs_names, columns=adata.var_names)
-    return df_counts
+    _contrast = reactive.value(None)
+    _reference = reactive.value(None)
+    _alternative = reactive.value(None)
+    _log10_p = reactive.value(0.05)
+    _lfc = reactive.value(1)
 
-if __name__ == '__main__':
-    print('Running DGEA test')
-    adata = sc.read_h5ad('/workspaces/SIMBA-Downstream_1/data/atlas.h5ad')
-    dge_test = scanvi_dgea(adata, "cell_type", "Endothelial", "Epithelial", './data')
-    print(dge_test.head())
+    _result = reactive.value(None)
+    _filtered_result = reactive.value(None)
+    _filtered_genes = reactive.value(None)
+    _filtered_counts = reactive.value(None)
+
+    run_dgea_server("run_dgea", _adata, _result, _counts, _reference, _alternative, _uniques, _contrast)
+    filter_dgea_server("filter_dgea", _adata, _counts, _uniques,
+                       _result, _filtered_result, _filtered_genes,
+                       _filtered_counts, _reference, _alternative, _contrast, _log10_p, _lfc)
+    plot_dgea_server("plot_dgea", _filtered_counts, _contrast, _reference, _alternative,
+                     _result, _log10_p, _lfc)

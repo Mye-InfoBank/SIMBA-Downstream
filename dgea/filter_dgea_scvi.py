@@ -1,7 +1,7 @@
 from shiny import reactive, ui, render, module
 import anndata as ad
 import pandas as pd
-from dgea.dgea_scvi import scanvi_dgea, get_normalized_counts
+from dgea.dgea_scvi_helpers import scanvi_dgea, get_normalized_counts
 
 @module.ui
 def filter_dgea_ui():
