@@ -9,7 +9,9 @@ from dgea.dgea_scvi import scanvi_dgea, get_normalized_counts
 def run_dgea_ui():
     return ui.div(ui.output_ui("contrast_selector"),
                   ui.output_ui("subset_selector"),
-              ui.input_task_button("run", "Run analysis"))
+                ui.input_task_button("run", "Run analysis"),
+                ui.input_select("column", "Choose a column:", _category_columns),
+                ui.input_selectize("categories", "Choose categories:", choices=[], multiple=True))
 
 @module.server
 def run_dgea_server(input, output, session,
@@ -21,7 +23,7 @@ def run_dgea_server(input, output, session,
                     _uniques: reactive.Value[list],
                     _contrast: reactive.Value[str],
                     _sub_category: reactive.Value[str],
-                    _uniques_sub: reactive.Value[list],
+                    #_uniques_sub: reactive.Value[list],
                     _chosen_sub: reactive.Value[str]):
     _category_columns = reactive.value([])
     _numeric_columns = reactive.value([])
@@ -46,7 +48,8 @@ def run_dgea_server(input, output, session,
     def subset_selector():
         columns = _category_columns.get()
 
-        return ui.input_select("sub_category", "Category to subset", choices=columns, selected=columns[0])
+        return ui.input_select("sub_category", "Category to subset", choices=columns, selected=columns[0]), ui.input_selectize
+    
     
     @reactive.effect
     def update_contrast():
