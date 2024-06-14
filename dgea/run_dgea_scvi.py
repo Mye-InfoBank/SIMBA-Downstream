@@ -17,6 +17,7 @@ def run_dgea_server(input, output, session,
                     _counts: reactive.Value[pd.DataFrame],
                     _reference: reactive.Value[str],
                     _alternative: reactive.Value[str],
+                    _model: reactive.Value[str],
                     _uniques: reactive.Value[list],
                     _contrast: reactive.Value[str]):
     _category_columns = reactive.value([])
@@ -49,7 +50,8 @@ def run_dgea_server(input, output, session,
         contrast = _contrast.get()
         referece = _reference.get()
         alternative = _alternative.get()
-        run_scanvi(adata, contrast, referece, alternative)
+        model = _model.get()
+        run_scanvi(adata, contrast, referece, alternative, model)
 
     @reactive.effect
     def update_scanvi_result():
@@ -59,8 +61,8 @@ def run_dgea_server(input, output, session,
     
     @ui.bind_task_button(button_id="run")
     @reactive.extended_task
-    async def run_scanvi(adata, contrast, reference, alternative):
-        dge_change = scanvi_dgea(adata, contrast, reference, alternative)
+    async def run_scanvi(adata, contrast, reference, alternative, model):
+        dge_change = scanvi_dgea(adata, contrast, reference, alternative, model)
         
         counts = get_normalized_counts(adata)
         return dge_change, counts
