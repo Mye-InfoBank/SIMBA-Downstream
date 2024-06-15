@@ -9,9 +9,8 @@ from dgea.dgea_scvi import scanvi_dgea, get_normalized_counts
 def run_dgea_ui():
     return ui.div(ui.output_ui("contrast_selector"),
                   ui.output_ui("subset_selector"),
-                ui.input_task_button("run", "Run analysis"),
-                ui.input_select("column", "Choose a column:", _category_columns),
-                ui.input_selectize("categories", "Choose categories:", choices=[], multiple=True))
+                  ui.output_ui("value_selector"),
+                ui.input_task_button("run", "Run analysis"))
 
 @module.server
 def run_dgea_server(input, output, session,
@@ -23,8 +22,7 @@ def run_dgea_server(input, output, session,
                     _uniques: reactive.Value[list],
                     _contrast: reactive.Value[str],
                     _sub_category: reactive.Value[str],
-                    #_uniques_sub: reactive.Value[list],
-                    _chosen_sub: reactive.Value[str]):
+                    _chosen_values: reactive.Value[list]):
     _category_columns = reactive.value([])
     _numeric_columns = reactive.value([])
 
@@ -48,8 +46,16 @@ def run_dgea_server(input, output, session,
     def subset_selector():
         columns = _category_columns.get()
 
-        return ui.input_select("sub_category", "Category to subset", choices=columns, selected=columns[0]), ui.input_selectize
+        return ui.input_select("sub_category", "Category to subset", choices=columns, selected=columns[0])
     
+    @output
+    @render.ui
+    def value_selector():
+        category = _sub_category.get()
+        adata = _adata.get()
+        values = adata.obs[category].unique().tolist()
+
+        return ui.input_selectize("value", "Choose values:", choices=values, multiple=True)
     
     @reactive.effect
     def update_contrast():
@@ -59,8 +65,9 @@ def run_dgea_server(input, output, session,
     def update_subset():
         sub_category = input["sub_category"].get()
         _sub_category.set(sub_category)
-        uniques_sub = _adata.get().obs[sub_category].unique().tolist()
-        _uniques_sub.set(uniques_sub)
+        chosen_values = input["value"].get()
+        _chosen_values.set(chosen_value)
+        subset_adata = adata[adata.obs[sub_category].isin(chosen_values)]
 
     @reactive.effect
     @reactive.event(input["run"])
