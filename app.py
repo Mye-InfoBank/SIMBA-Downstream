@@ -5,7 +5,7 @@ import json
 
 from composition import composition_server, composition_ui
 from export import export_ui, export_server
-from dgea.dgea import dgea_server, dgea_ui
+from dgea.dgea_scvi import dgea_server, dgea_ui
 from tree import tree_server, tree_ui
 
 with open("data/config.json") as f:
@@ -13,6 +13,7 @@ with open("data/config.json") as f:
     adata = sc.read_h5ad("data/" + config["adata"])
     tree = pickle.load(open("data/" + config["tree"], "rb")) if "tree" in config else None
     name = config["name"]
+    model_path = config["model_path"]
 
 categorical_columns = adata.obs.select_dtypes(include="category").columns.to_list()
 
@@ -34,6 +35,7 @@ def server(input, output, session):
     _dataframe = reactive.value(adata.obs)
     _adata = reactive.value(adata)
     _tree = reactive.value(tree)
+    _model = reactive.value(model_path)
     composition_server("composition", _dataframe)
     export_server("export")
     dgea_server("dgea", _adata)

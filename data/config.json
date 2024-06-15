@@ -1,5 +1,6 @@
 {
     "adata": "merged.h5ad",
     "tree": "scarches.tree.pkl",
-    "name": "possible_atlas"
+    "name": "possible_atlas",
+    "model_path": "./data"
 }
