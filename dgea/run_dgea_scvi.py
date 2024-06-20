@@ -9,7 +9,6 @@ from dgea.dgea_scvi import scanvi_dgea, get_normalized_counts
 def run_dgea_ui():
     return ui.div(ui.output_ui("contrast_selector"),
                   ui.output_ui("subset_selector"),
-                  ui.output_ui("value_selector"),
                 ui.input_task_button("run", "Run analysis"))
 
 @module.server
@@ -22,7 +21,7 @@ def run_dgea_server(input, output, session,
                     _uniques: reactive.Value[list],
                     _contrast: reactive.Value[str],
                     _sub_category: reactive.Value[str],
-                    _chosen_values: reactive.Value[list]):
+                    _sub_uniques: reactive.Value[list]):
     _category_columns = reactive.value([])
     _numeric_columns = reactive.value([])
 
@@ -48,26 +47,15 @@ def run_dgea_server(input, output, session,
 
         return ui.input_select("sub_category", "Category to subset", choices=columns, selected=columns[0])
     
-    @output
-    @render.ui
-    def value_selector():
-        category = _sub_category.get()
-        adata = _adata.get()
-        values = adata.obs[category].unique().tolist()
-
-        return ui.input_selectize("value", "Choose values:", choices=values, multiple=True)
-    
     @reactive.effect
     def update_contrast():
         contrast = input["contrast"].get()
         _contrast.set(contrast)
-        
+    
+    @reactive.effect    
     def update_subset():
         sub_category = input["sub_category"].get()
         _sub_category.set(sub_category)
-        chosen_values = input["value"].get()
-        _chosen_values.set(chosen_value)
-        subset_adata = adata[adata.obs[sub_category].isin(chosen_values)]
 
     @reactive.effect
     @reactive.event(input["run"])
@@ -100,3 +88,12 @@ def run_dgea_server(input, output, session,
             return
         uniques = adata.obs[contrast].unique().tolist()
         _uniques.set(uniques)
+        
+    @reactive.effect
+    def update_sub_uniques():
+        adata = _adata.get()
+        sub_category = _sub_category.get()
+        if adata is None or sub_category is None:
+            return
+        sub_uniques = adata.obs[sub_category].unique().tolist()
+        _sub_uniques.set(sub_uniques)

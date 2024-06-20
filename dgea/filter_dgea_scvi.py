@@ -6,7 +6,7 @@ from dgea.dgea_scvi import scanvi_dgea, get_normalized_counts
 @module.ui
 def filter_dgea_ui():
     return ui.div(
-        ui.output_ui("select_subset_value"),
+        ui.output_ui("select_values"),
         ui.output_ui("select_reference"),
         ui.output_ui("select_alternative"),
         ui.input_slider("log10_pscore", "Ropability in Reference (significance threshold)", min=0, max=20, step=0.01, value=3),
@@ -18,19 +18,16 @@ def filter_dgea_ui():
 def filter_dgea_server(input, output, session, 
                        _adata, _counts, _uniques,
                        _result, _filtered_result, _filtered_genes, _filtered_counts,
-                       _reference, _alternative, _contrast, _sub_category, _uniques_sub, _chosen_sub,
+                       _reference, _alternative, _contrast, _sub_category, _sub_uniques, _chosen_values,
                        _log10_p, _lfc
                        ):
 
     @output
     @render.ui
-    def select_subset_value():
-        uniques = _uniques_sub.get()
+    def select_values():
+        sub_uniques = _sub_uniques.get()
 
-        if not uniques:
-            return ui.p("Run analysis to see options")
-
-        return ui.input_select("subset_options", "Subset options", choices=uniques, selected=uniques[0])
+        return ui.input_select("value", "Choose values:", choices=sub_uniques, selectize=True, multiple=True, selected=sub_uniques)
     
     @output
     @render.ui
@@ -57,7 +54,7 @@ def filter_dgea_server(input, output, session,
 
     @reactive.effect
     def update_filters():
-        _chosen_sub.set(input["subset_options"].get())
+        _chosen_values.set(input["value"].get())
         _reference.set(input["reference"].get())
         _alternative.set(input["alternative"].get())
         _log10_p.set(input["log10_pscore"].get())
@@ -69,14 +66,22 @@ def filter_dgea_server(input, output, session,
         reference = _reference.get()
         alternative = _alternative.get()
         contrast = _contrast.get()
+        sub_category = _sub_category.get()
+        chosen_values = _chosen_values.get()
 
-        if None in (reference, alternative, contrast):
+        if None in (reference, alternative, contrast, sub_category, chosen_values):
             return
 
         res_df = scanvi_dgea(adata, contrast, reference, alternative)
         res_counts = get_normalized_counts(adata)
         _result.set(res_df)
-        _counts.set(res_counts)
+        #_counts.set(res_counts)
+        adata_sub = adata.obs[sub_category].isin(chosen_values)
+        print(f"adata_sub: {adata_sub}")
+        print(f"adata_sub index: {adata_sub.index}")
+        filtered_values_counts = res_counts.loc[adata_sub.index[adata_sub]]
+
+        _counts.set(filtered_values_counts)
     
     @reactive.effect
     def filter_result():
@@ -84,7 +89,7 @@ def filter_dgea_server(input, output, session,
         log10_p = input["log10_pscore"].get()
         lfc = input["lfc"].get()
         counts = _counts.get()
-
+        
         if result is None:
             return None
 
