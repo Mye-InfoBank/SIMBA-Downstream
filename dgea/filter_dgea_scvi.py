@@ -60,6 +60,7 @@ def filter_dgea_server(input, output, session,
         _log10_p.set(input["log10_pscore"].get())
         _lfc.set(input["lfc"].get())
 
+    '''
     @reactive.effect
     def update_result():
         adata = _adata.get()
@@ -82,7 +83,7 @@ def filter_dgea_server(input, output, session,
         filtered_values_counts = res_counts.loc[adata_sub.index[adata_sub]]
 
         _counts.set(filtered_values_counts)
-    
+    '''
     @reactive.effect
     def filter_result():
         result = _result.get()

@@ -21,6 +21,7 @@ def run_dgea_server(input, output, session,
                     _uniques: reactive.Value[list],
                     _contrast: reactive.Value[str],
                     _sub_category: reactive.Value[str],
+                    _chosen_values: reactive.Value[list],
                     _sub_uniques: reactive.Value[list]):
     _category_columns = reactive.value([])
     _numeric_columns = reactive.value([])
@@ -64,7 +65,10 @@ def run_dgea_server(input, output, session,
         contrast = _contrast.get()
         referece = _reference.get()
         alternative = _alternative.get()
-        run_scanvi(adata, contrast, referece, alternative)
+        sub_category = _sub_category.get()
+        chosen_values = _chosen_values.get()
+        adata_subset = adata[adata.obs[sub_category].isin(chosen_values)].copy()
+        run_scanvi(adata_subset, contrast, referece, alternative)
 
     @reactive.effect
     def update_scanvi_result():

@@ -35,7 +35,7 @@ def dgea_server(input, output, session, _adata: reactive.Value[ad.AnnData]):
     _filtered_genes = reactive.value(None)
     _filtered_counts = reactive.value(None)
 
-    run_dgea_server("run_dgea", _adata, _result, _counts, _reference, _alternative, _uniques, _contrast, _sub_category, _sub_uniques)
+    run_dgea_server("run_dgea", _adata, _result, _counts, _reference, _alternative, _uniques, _contrast, _sub_category, _chosen_values, _sub_uniques)
     filter_dgea_server("filter_dgea", _adata, _counts, _uniques,
                        _result, _filtered_result, _filtered_genes,
                        _filtered_counts, _reference, _alternative, _contrast, _sub_category, _sub_uniques, _chosen_values, _log10_p, _lfc)
