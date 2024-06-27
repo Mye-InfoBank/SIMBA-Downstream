@@ -17,7 +17,7 @@ def dgea_ui():
                     )
 
 @module.server
-def dgea_server(input, output, session, _adata: reactive.Value[ad.AnnData]):
+def dgea_server(input, output, session, _adata: reactive.Value[ad.AnnData], _model: reactive.Value[str]):
     _counts = reactive.value(None)
     _uniques = reactive.value([])
 
@@ -32,9 +32,9 @@ def dgea_server(input, output, session, _adata: reactive.Value[ad.AnnData]):
     _filtered_genes = reactive.value(None)
     _filtered_counts = reactive.value(None)
 
-    run_dgea_server("run_dgea", _adata, _result, _counts, _reference, _alternative, _uniques, _contrast)
+    run_dgea_server("run_dgea", _adata, _result, _counts, _reference, _alternative, _model, _uniques, _contrast)
     filter_dgea_server("filter_dgea", _adata, _counts, _uniques,
                        _result, _filtered_result, _filtered_genes,
-                       _filtered_counts, _reference, _alternative, _contrast, _log10_p, _lfc)
+                       _filtered_counts, _reference, _alternative, _contrast, _model, _log10_p, _lfc)
     plot_dgea_server("plot_dgea", _filtered_counts, _contrast, _reference, _alternative,
                      _result, _log10_p, _lfc)

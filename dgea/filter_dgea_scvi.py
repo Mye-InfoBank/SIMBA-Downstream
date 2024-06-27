@@ -17,7 +17,7 @@ def filter_dgea_ui():
 def filter_dgea_server(input, output, session, 
                        _adata, _counts, _uniques,
                        _result, _filtered_result, _filtered_genes, _filtered_counts,
-                       _reference, _alternative, _contrast,
+                       _reference, _alternative, _contrast, _model,
                        _log10_p, _lfc
                        ):
 
@@ -57,11 +57,12 @@ def filter_dgea_server(input, output, session,
         reference = _reference.get()
         alternative = _alternative.get()
         contrast = _contrast.get()
+        model = _model.get()
 
         if None in (reference, alternative, contrast):
             return
 
-        res_df = scanvi_dgea(adata, contrast, reference, alternative)
+        res_df = scanvi_dgea(adata, contrast, reference, alternative, model)
         res_counts = get_normalized_counts(adata)
         _result.set(res_df)
         _counts.set(res_counts)

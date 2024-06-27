@@ -38,7 +38,7 @@ def server(input, output, session):
     _model = reactive.value(model_path)
     composition_server("composition", _dataframe)
     export_server("export")
-    dgea_server("dgea", _adata)
+    dgea_server("dgea", _adata, _model)
     tree_server("tree", _tree)
 
 app = App(app_ui, server)
