@@ -60,30 +60,6 @@ def filter_dgea_server(input, output, session,
         _log10_p.set(input["log10_pscore"].get())
         _lfc.set(input["lfc"].get())
 
-    '''
-    @reactive.effect
-    def update_result():
-        adata = _adata.get()
-        reference = _reference.get()
-        alternative = _alternative.get()
-        contrast = _contrast.get()
-        sub_category = _sub_category.get()
-        chosen_values = _chosen_values.get()
-
-        if None in (reference, alternative, contrast, sub_category, chosen_values):
-            return
-
-        res_df = scanvi_dgea(adata, contrast, reference, alternative)
-        res_counts = get_normalized_counts(adata)
-        _result.set(res_df)
-        #_counts.set(res_counts)
-        adata_sub = adata.obs[sub_category].isin(chosen_values)
-        print(f"adata_sub: {adata_sub}")
-        print(f"adata_sub index: {adata_sub.index}")
-        filtered_values_counts = res_counts.loc[adata_sub.index[adata_sub]]
-
-        _counts.set(filtered_values_counts)
-    '''
     @reactive.effect
     def filter_result():
         result = _result.get()
