@@ -6,6 +6,7 @@ from dgea.dgea_scvi_helpers import scanvi_dgea, get_normalized_counts
 @module.ui
 def filter_dgea_ui():
     return ui.div(
+        ui.output_ui("select_values"),
         ui.output_ui("select_reference"),
         ui.output_ui("select_alternative"),
         ui.input_slider("log10_pscore", "Ropability in Reference (significance threshold)", min=0, max=20, step=0.01, value=3),
@@ -17,9 +18,16 @@ def filter_dgea_ui():
 def filter_dgea_server(input, output, session, 
                        _adata, _counts, _uniques,
                        _result, _filtered_result, _filtered_genes, _filtered_counts,
-                       _reference, _alternative, _contrast, _model,
+                       _reference, _alternative, _contrast, _sub_category, _sub_uniques, _chosen_values, _model,
                        _log10_p, _lfc
                        ):
+
+    @output
+    @render.ui
+    def select_values():
+        sub_uniques = _sub_uniques.get()
+
+        return ui.input_select("value", "Choose values:", choices=sub_uniques, selectize=True, multiple=True, selected=sub_uniques)
 
     @output
     @render.ui
@@ -46,27 +54,12 @@ def filter_dgea_server(input, output, session,
 
     @reactive.effect
     def update_filters():
+        _chosen_values.set(input["value"].get())
         _reference.set(input["reference"].get())
         _alternative.set(input["alternative"].get())
         _log10_p.set(input["log10_pscore"].get())
         _lfc.set(input["lfc"].get())
 
-    @reactive.effect
-    def update_result():
-        adata = _adata.get()
-        reference = _reference.get()
-        alternative = _alternative.get()
-        contrast = _contrast.get()
-        model = _model.get()
-
-        if None in (reference, alternative, contrast):
-            return
-
-        res_df = scanvi_dgea(adata, contrast, reference, alternative, model)
-        res_counts = get_normalized_counts(adata)
-        _result.set(res_df)
-        _counts.set(res_counts)
-    
     @reactive.effect
     def filter_result():
         result = _result.get()

@@ -8,7 +8,8 @@ from dgea.dgea_scvi_helpers import scanvi_dgea, get_normalized_counts
 @module.ui
 def run_dgea_ui():
     return ui.div(ui.output_ui("contrast_selector"),
-              ui.input_task_button("run", "Run analysis"))
+                ui.output_ui("subset_selector"),
+                ui.input_task_button("run", "Run analysis"))
 
 @module.server
 def run_dgea_server(input, output, session,
@@ -19,7 +20,10 @@ def run_dgea_server(input, output, session,
                     _alternative: reactive.Value[str],
                     _model: reactive.Value[str],
                     _uniques: reactive.Value[list],
-                    _contrast: reactive.Value[str]):
+                    _contrast: reactive.Value[str],
+                    _sub_category: reactive.Value[str],
+                    _chosen_values: reactive.Value[list],
+                    _sub_uniques: reactive.Value[list]):
     _category_columns = reactive.value([])
     _numeric_columns = reactive.value([])
 
@@ -38,10 +42,22 @@ def run_dgea_server(input, output, session,
 
         return ui.input_select("contrast", "Contrast", choices=columns, selected=columns[0])
     
+    @output
+    @render.ui
+    def subset_selector():
+        columns = _category_columns.get()
+
+        return ui.input_select("sub_category", "Category to subset", choices=columns, selected=columns[0])
+    
     @reactive.effect
     def update_contrast():
         contrast = input["contrast"].get()
         _contrast.set(contrast)
+        
+    @reactive.effect    
+    def update_subset():
+        sub_category = input["sub_category"].get()
+        _sub_category.set(sub_category)
 
     @reactive.effect
     @reactive.event(input["run"])
@@ -51,7 +67,10 @@ def run_dgea_server(input, output, session,
         referece = _reference.get()
         alternative = _alternative.get()
         model = _model.get()
-        run_scanvi(adata, contrast, referece, alternative, model)
+        sub_category = _sub_category.get()
+        chosen_values = _chosen_values.get()
+        adata_subset = adata[adata.obs[sub_category].isin(chosen_values)].copy()
+        run_scanvi(adata_subset, contrast, referece, alternative, model)
 
     @reactive.effect
     def update_scanvi_result():
@@ -75,3 +94,12 @@ def run_dgea_server(input, output, session,
             return
         uniques = adata.obs[contrast].unique().tolist()
         _uniques.set(uniques)
+        
+    @reactive.effect
+    def update_sub_uniques():
+        adata = _adata.get()
+        sub_category = _sub_category.get()
+        if adata is None or sub_category is None:
+            return
+        sub_uniques = adata.obs[sub_category].unique().tolist()
+        _sub_uniques.set(sub_uniques)

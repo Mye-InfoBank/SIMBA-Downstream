@@ -38,9 +38,6 @@ def plot_dgea_server(input, output, session,
     @render.plot
     def plot_heatmap():
         counts_df = _filtered_counts.get()
-        contrast = _contrast.get()
-        reference = _reference.get()
-        alternative = _alternative.get()
 
         if counts_df is None:
             return None
