@@ -4,6 +4,8 @@ import re
 
 annotations_directory = "data/annotations"
 
+os.makedirs(annotations_directory, exist_ok=True)
+
 
 def get_files(regex, directory=annotations_directory):
     if not os.path.exists(directory):
@@ -24,7 +26,7 @@ def get_cell_labels():
 
 
 @module.ui
-def export_ui():
+def cellxgene_ui():
     return ui.input_action_button("update", "Update"), \
         ui.layout_columns(
             ui.card(
@@ -45,7 +47,7 @@ def export_ui():
 
 
 @module.server
-def export_server(input, output, session):
+def cellxgene_server(input, output, session):
     _gene_sets = reactive.value([])
     _cell_labels = reactive.value([])
 
